@@ -7,7 +7,7 @@ use tungstenite::{connect, Message, Result, WebSocket};
 use url::Url;
 
 #[derive(Debug, Clone)]
-pub struct Creds<'a> {
+struct Creds<'a> {
     drb_public: &'a str,
     drb_private: &'a str,
 }
