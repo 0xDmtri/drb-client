@@ -16,6 +16,12 @@ pub struct AuthParams<'a> {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
+pub struct BookParams<'a> {
+    pub currency: &'a str,
+    pub kind: &'a str,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
 pub struct BalanceParams {
     pub with_portfolio: bool,
 }

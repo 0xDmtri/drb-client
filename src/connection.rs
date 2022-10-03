@@ -1,4 +1,4 @@
-use crate::types::{AuthParams, BalanceParams, Request};
+use crate::types::{AuthParams, BalanceParams, BookParams, Request};
 use serde::Serialize;
 use serde_json::Value;
 use std::net::TcpStream;
@@ -32,12 +32,12 @@ impl<'a> Dealer<'a> {
         }
     }
 
-    pub fn send<T: Serialize>(&mut self, msg: T) -> Result<()> {
+    fn send<T: Serialize>(&mut self, msg: T) -> Result<()> {
         let message = serde_json::to_string(&msg).unwrap();
         self.socket.write_message(Message::Text(message))
     }
 
-    pub fn read(&mut self) -> Result<Value> {
+    fn read(&mut self) -> Result<Value> {
         let msg = self.socket.read_message()?;
 
         let msg = match msg {
@@ -48,6 +48,14 @@ impl<'a> Dealer<'a> {
         let parsed: Value = serde_json::from_str(&msg).expect("Can't parse to JSON");
 
         Ok(parsed)
+    }
+
+    pub fn raw_request<T: Serialize>(
+        &mut self,
+        body: &Request<'a, T>,
+    ) -> Result<Value, tungstenite::Error> {
+        self.send(&body)?;
+        self.read()
     }
 
     pub fn authenicate(&mut self) -> Result<Value, tungstenite::Error> {
@@ -64,8 +72,7 @@ impl<'a> Dealer<'a> {
             params: auth_params,
         };
 
-        self.send(&auth)?;
-        self.read()
+        self.raw_request(&auth)
     }
 
     pub fn get_balance(&mut self) -> Result<Value, tungstenite::Error> {
@@ -80,7 +87,22 @@ impl<'a> Dealer<'a> {
             params: balance_params,
         };
 
-        self.send(&balance)?;
-        self.read()
+        self.raw_request(&balance)
+    }
+
+    pub fn get_options_book(&mut self) -> Result<Value, tungstenite::Error> {
+        let book_params = BookParams {
+            currency: "ETH",
+            kind: "option",
+        };
+
+        let book = Request {
+            jsonrpc: "2.0",
+            id: 9344,
+            method: "public/get_book_summary_by_currency",
+            params: book_params,
+        };
+
+        self.raw_request(&book)
     }
 }
