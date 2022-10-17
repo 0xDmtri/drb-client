@@ -25,3 +25,9 @@ pub struct BookParams<'a> {
 pub struct BalanceParams {
     pub with_portfolio: bool,
 }
+
+pub enum Symbol {
+    ETH,
+    BTC,
+    SOL,
+}

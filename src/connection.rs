@@ -1,4 +1,4 @@
-use crate::types::{AuthParams, BalanceParams, BookParams, Request};
+use crate::types::{AuthParams, BalanceParams, BookParams, Request, Symbol};
 use serde::Serialize;
 use serde_json::Value;
 use std::net::TcpStream;
@@ -90,9 +90,15 @@ impl<'a> Dealer<'a> {
         self.raw_request(&balance)
     }
 
-    pub fn get_options_book(&mut self) -> Result<Value, tungstenite::Error> {
+    pub fn get_options_book(&mut self, symbol: Symbol) -> Result<Value, tungstenite::Error> {
+        let drb_symbol = match symbol {
+            Symbol::ETH => "ETH",
+            Symbol::BTC => "BTC",
+            Symbol::SOL => "SOL",
+        };
+
         let book_params = BookParams {
-            currency: "ETH",
+            currency: drb_symbol,
             kind: "option",
         };
 
